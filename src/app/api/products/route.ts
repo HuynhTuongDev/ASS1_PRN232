@@ -5,12 +5,18 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
+    const category = searchParams.get("category") || "";
 
     const products = await prisma.product.findMany({
       where: {
-        OR: [
-          { name: { contains: query, mode: "insensitive" } },
-          { description: { contains: query, mode: "insensitive" } },
+        AND: [
+          {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+            ],
+          },
+          category ? { category: { equals: category } } : {},
         ],
       },
       orderBy: { createdAt: "desc" },
@@ -29,7 +35,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, price, image } = body;
+    const { name, description, price, image, category } = body;
 
     if (!name || !description || price === undefined) {
       return NextResponse.json(
@@ -44,6 +50,7 @@ export async function POST(request: Request) {
         description,
         price: parseFloat(price),
         image,
+        category: category || "General",
       },
     });
 

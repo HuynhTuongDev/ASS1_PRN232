@@ -12,17 +12,22 @@ interface Product {
   description: string;
   price: number;
   image?: string;
+  category: string;
 }
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const fetchProducts = async (query = "") => {
+  const categories = ["All", "Living", "Wellness", "Aroma", "Style", "Other"];
+
+  const fetchProducts = async (query = "", category = "All") => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/products?q=${encodeURIComponent(query)}`);
+      const categoryParam = category === "All" ? "" : category;
+      const res = await fetch(`/api/products?q=${encodeURIComponent(query)}&category=${encodeURIComponent(categoryParam)}`);
       const data = await res.json();
       setProducts(data);
     } catch (error) {
@@ -34,11 +39,11 @@ export default function Home() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchProducts(search);
+      fetchProducts(search, selectedCategory);
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search]);
+  }, [search, selectedCategory]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
@@ -57,10 +62,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-24 pb-20 lg:pt-40 lg:pb-32">
-        {/* Background Decorative Elements */}
         <div className="absolute inset-0 z-0 opacity-40">
           <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] bg-emerald-50 rounded-full blur-[120px]" />
           <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 w-[500px] h-[500px] bg-teal-50 rounded-full blur-[100px]" />
@@ -70,13 +74,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-12 gap-16 items-center text-center lg:text-left">
             <div className="lg:col-span-7 flex flex-col items-center lg:items-start">
-              <div className="flex items-center gap-3 py-2 px-4 rounded-full bg-emerald-50/50 border border-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-[0.3em] mb-8 animate-fade-in">
+              <div className="flex items-center gap-3 py-2 px-4 rounded-full bg-emerald-50/50 border border-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
                 <Sparkles className="h-3 w-3" />
                 Botanical & Pure Essentials
               </div>
               <h1 className="text-7xl md:text-9xl font-black text-slate-900 mb-8 leading-[0.85] tracking-tighter">
                 HARMONIZE <br />
-                <span className="text-gradient">YOUR SPACE.</span>
+                <span className="text-emerald-800">YOUR SPACE.</span>
               </h1>
               <p className="text-slate-500 text-lg md:text-xl font-medium mb-12 max-w-xl leading-relaxed">
                 Discover curated essentials for an intentional life. High-integrity materials meets timeless design for the modern sanctuary.
@@ -90,20 +94,19 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-            
+
             <div className="lg:col-span-5 relative">
               <div className="relative aspect-[4/5] w-full max-w-[420px] mx-auto lg:ml-auto">
                 <div className="absolute inset-0 bg-emerald-900/5 rounded-[4rem] -rotate-3 translate-x-4 translate-y-4" />
                 <div className="relative z-10 w-full h-full rounded-[4rem] overflow-hidden shadow-2xl shadow-emerald-900/10 rotate-2 hover:rotate-0 transition-transform duration-1000">
-                  <img 
-                    src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&q=80" 
-                    alt="Hero" 
+                  <img
+                    src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&q=80"
+                    alt="Hero"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/20 to-transparent" />
                 </div>
-                {/* Floating Badge */}
-                <div className="absolute -bottom-6 -left-6 lg:-left-12 z-20 bg-white p-6 rounded-[2.5rem] shadow-2xl border border-emerald-50 flex items-center gap-5 max-w-[260px] animate-bounce-subtle">
+                <div className="absolute -bottom-6 -left-6 lg:-left-12 z-20 bg-white p-6 rounded-[2.5rem] shadow-2xl border border-emerald-50 flex items-center gap-5 max-w-[260px]">
                   <div className="bg-emerald-800 text-white p-4 rounded-3xl shadow-lg shadow-emerald-900/20">
                     <Leaf className="h-7 w-7" />
                   </div>
@@ -130,7 +133,7 @@ export default function Home() {
                 Explore our full range of curated essentials. Filter by name or style to find your perfect match.
               </p>
             </div>
-            
+
             <div className="relative w-full max-w-md group">
               <div className="absolute inset-0 bg-emerald-900/5 rounded-[2rem] scale-95 opacity-0 group-focus-within:scale-100 group-focus-within:opacity-100 transition-all duration-300" />
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-800/40" />
@@ -146,6 +149,21 @@ export default function Home() {
               </div>
             </div>
           </header>
+
+          <div className="flex flex-wrap gap-4 mt-16">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-8 py-3 rounded-2xl font-bold transition-all ${selectedCategory === cat
+                    ? "bg-emerald-900 text-white shadow-xl shadow-emerald-900/20 scale-105"
+                    : "bg-white text-slate-500 hover:text-emerald-800 hover:bg-emerald-50"
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
         {loading ? (

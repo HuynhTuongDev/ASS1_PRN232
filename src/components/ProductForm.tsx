@@ -11,6 +11,7 @@ interface ProductFormProps {
     description: string;
     price: number;
     image?: string;
+    category: string;
   };
   id?: number;
 }
@@ -25,6 +26,7 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
     description: initialData?.description || "",
     price: initialData?.price || "",
     image: initialData?.image || "",
+    category: initialData?.category || "General",
   });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,6 +113,22 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
           />
         </div>
 
+        <div>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Category</label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium text-slate-700"
+          >
+            <option value="General">General</option>
+            <option value="Living">Living</option>
+            <option value="Wellness">Wellness</option>
+            <option value="Aroma">Aroma</option>
+            <option value="Style">Style</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Price (USD)</label>
@@ -132,9 +150,9 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
             <div className="space-y-4">
               {formData.image ? (
                 <div className="relative aspect-video rounded-[1.5rem] overflow-hidden bg-slate-100 group border border-slate-200 shadow-inner">
-                  <img 
-                    src={formData.image} 
-                    alt="Preview" 
+                  <img
+                    src={formData.image}
+                    alt="Preview"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       console.error("Image load error:", formData.image);
@@ -152,7 +170,7 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
                   </div>
                 </div>
               ) : (
-                <div 
+                <div
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full aspect-video rounded-[1.5rem] border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group"
                 >

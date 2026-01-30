@@ -4,6 +4,8 @@ import { ChevronLeft, Edit, Calendar, DollarSign, Bookmark } from "lucide-react"
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import AddToCartButton from "@/components/AddToCartButton";
+
 export default async function ProductDetailPage({
   params,
 }: {
@@ -23,13 +25,13 @@ export default async function ProductDetailPage({
     <div className="min-h-screen bg-white">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <Link href="/" className="inline-flex items-center text-slate-400 hover:text-blue-600 font-bold mb-16 transition-all group tracking-widest text-xs uppercase">
+        <Link href="/" className="inline-flex items-center text-slate-400 hover:text-emerald-800 font-bold mb-16 transition-all group tracking-widest text-xs uppercase">
           <ChevronLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Collection
         </Link>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
           {/* Image Section */}
-          <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden bg-slate-50 shadow-2xl shadow-slate-200 border border-slate-100 group">
+          <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden bg-slate-50 shadow-2xl shadow-emerald-900/5 border border-slate-100 group">
             {product.image ? (
               <img
                 src={product.image}
@@ -38,11 +40,14 @@ export default async function ProductDetailPage({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-slate-100 text-8xl font-black italic">
-                LUXE
+                AURA
               </div>
             )}
-            <div className="absolute top-8 left-8">
-              <span className="px-6 py-2 bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-xl">
+            <div className="absolute top-8 left-8 flex flex-col gap-3">
+              <span className="px-6 py-2 bg-white/90 backdrop-blur-md text-emerald-900 text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-xl">
+                {product.category}
+              </span>
+              <span className="px-6 py-2 bg-emerald-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-xl">
                 Premium Grade
               </span>
             </div>
@@ -51,16 +56,16 @@ export default async function ProductDetailPage({
           {/* Info Section */}
           <div className="flex flex-col pt-4">
             <div className="flex items-center gap-4 mb-8">
-              <div className="h-px w-12 bg-blue-600"></div>
-              <span className="text-blue-600 text-xs font-black uppercase tracking-[0.2em]">
-                Verified Product
+              <div className="h-px w-12 bg-emerald-800"></div>
+              <span className="text-emerald-800 text-xs font-black uppercase tracking-[0.2em]">
+                Authentic Archive
               </span>
             </div>
 
             <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-8 leading-[0.9] tracking-tighter">
               {product.name}
             </h1>
-            
+
             <div className="flex items-center gap-12 mb-12 pb-12 border-b border-slate-100">
               <div className="flex flex-col">
                 <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -70,10 +75,10 @@ export default async function ProductDetailPage({
               </div>
               <div className="flex flex-col">
                 <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                  <Calendar className="h-3 w-3" /> Release Date
+                  <Calendar className="h-3 w-3" /> Added Date
                 </span>
                 <span className="text-xl font-bold text-slate-700">
-                  {new Date(product.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  {new Date(product.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
             </div>
@@ -86,15 +91,14 @@ export default async function ProductDetailPage({
             </div>
 
             <div className="mt-auto flex flex-wrap gap-6">
+              <AddToCartButton product={product} />
+
               <Link
                 href={`/products/${product.id}/edit`}
-                className="px-10 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black flex items-center justify-center gap-3 hover:bg-black transition-all shadow-2xl shadow-slate-200 active:scale-95"
+                className="px-10 py-5 bg-slate-100 text-slate-900 rounded-[1.5rem] font-bold flex items-center justify-center gap-3 hover:bg-slate-200 transition-all active:scale-95"
               >
-                <Edit className="h-5 w-5" /> Edit Perspective
+                <Edit className="h-5 w-5" /> Edit
               </Link>
-              <button className="p-5 border border-slate-200 rounded-[1.5rem] text-slate-900 hover:bg-slate-50 transition-all shadow-sm">
-                <Bookmark className="h-6 w-6" />
-              </button>
             </div>
           </div>
         </div>
