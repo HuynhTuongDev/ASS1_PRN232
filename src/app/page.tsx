@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { Search, Loader2, PackageX, SlidersHorizontal, ArrowRight, ShoppingBag, Leaf, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Product {
   id: number;
@@ -66,14 +67,33 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-24 pb-20 lg:pt-40 lg:pb-32">
         <div className="absolute inset-0 z-0 opacity-40">
-          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] bg-emerald-50 rounded-full blur-[120px]" />
-          <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 w-[500px] h-[500px] bg-teal-50 rounded-full blur-[100px]" />
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 45, 0]
+            }}
+            transition={{ duration: 20, repeat: Infinity }}
+            className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] bg-emerald-50 rounded-full blur-[120px]"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.3, 1],
+              x: [0, 50, 0]
+            }}
+            transition={{ duration: 15, repeat: Infinity }}
+            className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 w-[500px] h-[500px] bg-teal-50 rounded-full blur-[100px]"
+          />
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-12 gap-16 items-center text-center lg:text-left">
-            <div className="lg:col-span-7 flex flex-col items-center lg:items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="lg:col-span-7 flex flex-col items-center lg:items-start"
+            >
               <div className="flex items-center gap-3 py-2 px-4 rounded-full bg-emerald-50/50 border border-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
                 <Sparkles className="h-3 w-3" />
                 Botanical & Pure Essentials
@@ -93,9 +113,14 @@ export default function Home() {
                   Join the Circle
                 </Link>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="lg:col-span-5 relative">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.2 }}
+              className="lg:col-span-5 relative"
+            >
               <div className="relative aspect-[4/5] w-full max-w-[420px] mx-auto lg:ml-auto">
                 <div className="absolute inset-0 bg-emerald-900/5 rounded-[4rem] -rotate-3 translate-x-4 translate-y-4" />
                 <div className="relative z-10 w-full h-full rounded-[4rem] overflow-hidden shadow-2xl shadow-emerald-900/10 rotate-2 hover:rotate-0 transition-transform duration-1000">
@@ -106,7 +131,12 @@ export default function Home() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/20 to-transparent" />
                 </div>
-                <div className="absolute -bottom-6 -left-6 lg:-left-12 z-20 bg-white p-6 rounded-[2.5rem] shadow-2xl border border-emerald-50 flex items-center gap-5 max-w-[260px]">
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 1 }}
+                  className="absolute -bottom-6 -left-6 lg:-left-12 z-20 bg-white p-6 rounded-[2.5rem] shadow-2xl border border-emerald-50 flex items-center gap-5 max-w-[260px]"
+                >
                   <div className="bg-emerald-800 text-white p-4 rounded-3xl shadow-lg shadow-emerald-900/20">
                     <Leaf className="h-7 w-7" />
                   </div>
@@ -114,16 +144,21 @@ export default function Home() {
                     <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-1">Our Choice</p>
                     <p className="text-lg font-bold text-slate-900 leading-tight">Organic Silk Candle</p>
                   </div>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
       <main id="collection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 bg-white rounded-[4rem] shadow-sm mb-32">
-        <div className="bg-emerald-50/30 p-10 lg:p-16 rounded-[3.5rem] mb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-emerald-50/30 p-10 lg:p-16 rounded-[3.5rem] mb-20"
+        >
           <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
             <div className="max-w-xl">
               <h2 className="text-5xl font-black text-slate-900 mb-4 tracking-tighter">
@@ -135,70 +170,76 @@ export default function Home() {
             </div>
 
             <div className="relative w-full max-w-md group">
-              <div className="absolute inset-0 bg-emerald-900/5 rounded-[2rem] scale-95 opacity-0 group-focus-within:scale-100 group-focus-within:opacity-100 transition-all duration-300" />
+              <div className="absolute inset-0 bg-white rounded-[2rem] shadow-xl opacity-0 group-focus-within:opacity-100 transition-all duration-300" />
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-800/40" />
               <input
                 type="text"
                 placeholder="Search the archive..."
-                className="relative w-full pl-16 pr-16 py-6 rounded-[2rem] bg-white border border-emerald-100 focus:border-emerald-800/20 focus:ring-0 transition-all outline-none font-medium placeholder:text-slate-400 shadow-sm"
+                className="relative w-full pl-16 pr-16 py-6 rounded-[2rem] bg-white border border-emerald-100 focus:border-emerald-800"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-emerald-50 p-3 rounded-2xl border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-100 transition-all">
-                <SlidersHorizontal className="h-4 w-4 text-emerald-800" />
-              </div>
             </div>
           </header>
 
           <div className="flex flex-wrap gap-4 mt-16">
             {categories.map((cat) => (
-              <button
+              <motion.button
                 key={cat}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-8 py-3 rounded-2xl font-bold transition-all ${selectedCategory === cat
-                    ? "bg-emerald-900 text-white shadow-xl shadow-emerald-900/20 scale-105"
-                    : "bg-white text-slate-500 hover:text-emerald-800 hover:bg-emerald-50"
+                    ? "bg-emerald-900 text-white shadow-xl shadow-emerald-900/20"
+                    : "bg-white text-slate-500 hover:bg-emerald-50"
                   }`}
               >
                 {cat}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
-            <div className="relative">
-              <div className="h-16 w-16 border-4 border-emerald-50 border-t-emerald-800 rounded-full animate-spin" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Leaf className="h-6 w-6 text-emerald-800" />
-              </div>
-            </div>
-            <p className="text-slate-500 font-bold mt-6 tracking-widest uppercase text-xs">Finding Your Aura...</p>
-          </div>
-        ) : products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onDelete={handleDelete}
-              />
-            ))}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="h-16 w-16 border-4 border-emerald-50 border-t-emerald-800 rounded-full"
+            />
+            <p className="text-slate-500 font-bold mt-6 tracking-widest uppercase text-xs">Syncing Selection...</p>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-32 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
-            <div className="bg-white p-8 rounded-full shadow-xl mb-6">
-              <PackageX className="h-12 w-12 text-slate-300" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-2 underline decoration-blue-500/30">End of the line</h3>
-            <p className="text-slate-500 font-medium italic">We couldn't find any items matching your search.</p>
-          </div>
+          <motion.div
+            layout
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16"
+          >
+            <AnimatePresence>
+              {products.length > 0 ? (
+                products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onDelete={handleDelete}
+                  />
+                ))
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="col-span-full flex flex-col items-center justify-center py-32"
+                >
+                  <PackageX className="h-12 w-12 text-slate-200 mb-4" />
+                  <p className="text-slate-400 font-medium">No matches found in the archive.</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         )}
       </main>
 
       {/* Footer minimal */}
-      <footer className="py-20 bg-slate-50 border-t border-slate-200">
+      <footer className="py-20 bg-slate-50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
           <div className="flex items-center gap-2 mb-8">
             <div className="bg-emerald-900 p-2 rounded-lg">

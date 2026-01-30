@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Edit, Trash2, ArrowUpRight, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { motion } from "framer-motion";
 
 interface Product {
   id: number;
@@ -22,20 +23,32 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
   const { addToCart } = useCart();
 
   return (
-    <div className="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-[0_20px_50px_rgba(6,_95,_70,_0.05)] transition-all duration-500 flex flex-col h-full active:scale-[0.98]">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -10 }}
+      className="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-[0_20px_50px_rgba(6,_95,_70,_0.05)] transition-all duration-500 flex flex-col h-full active:scale-[0.98]"
+    >
       <div className="relative aspect-[4/5] overflow-hidden bg-slate-50">
-        {product.image ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 font-bold bg-slate-100/50">
-            <ShoppingCart className="h-12 w-12 mb-2 opacity-20" />
-            <span className="text-xs uppercase tracking-widest opacity-50">No Image</span>
-          </div>
-        )}
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="w-full h-full"
+        >
+          {product.image ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 font-bold bg-slate-100/50">
+              <ShoppingCart className="h-12 w-12 mb-2 opacity-20" />
+              <span className="text-xs uppercase tracking-widest opacity-50">No Image</span>
+            </div>
+          )}
+        </motion.div>
 
         {/* Category Badge */}
         <div className="absolute top-4 left-4">
@@ -81,7 +94,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
             {product.name}
           </h3>
         </Link>
-        <p className="text-slate-500 text-sm line-clamp-2 mb-6 flex-1 leading-relaxed">
+        <p className="text-slate-500 text-sm line-clamp-2 mb-6 flex-1 leading-relaxed font-medium">
           {product.description}
         </p>
 
@@ -104,6 +117,6 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

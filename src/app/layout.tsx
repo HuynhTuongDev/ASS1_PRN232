@@ -5,8 +5,8 @@ import "./globals.css";
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "LUXE | Premium Clothing",
-  description: "Modern e-commerce platform for premium apparel.",
+  title: "AURA | Premium Botanical Essentials",
+  description: "Curated collection of high-integrity materials and timeless design for the modern sanctuary.",
 };
 
 import { CartProvider } from "@/context/CartContext";
