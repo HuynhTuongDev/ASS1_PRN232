@@ -10,8 +10,9 @@ import { CreditCard, Truck, ShieldCheck, ArrowRight, Loader2, CheckCircle2, Aler
 import Link from "next/link";
 import { formatVND } from "@/lib/currencies";
 import { useNotification } from "@/context/NotificationContext";
+import { Suspense } from "react";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
     const { cart, totalPrice, clearCart } = useCart();
     const { user } = useAuth();
     const { showToast } = useNotification();
@@ -185,7 +186,7 @@ export default function CheckoutPage() {
                             <h2 className="text-3xl font-black tracking-tighter mb-8 text-slate-900">Tóm tắt đơn hàng</h2>
 
                             <div className="max-h-[300px] overflow-y-auto mb-8 space-y-4 pr-4 custom-scrollbar">
-                                {cart.map((item) => (
+                                {cart.map((item: any) => (
                                     <div key={item.id} className="flex items-center gap-4">
                                         <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
                                             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -230,5 +231,17 @@ export default function CheckoutPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-10 w-10 text-emerald-900 animate-spin" />
+            </div>
+        }>
+            <CheckoutContent />
+        </Suspense>
     );
 }
