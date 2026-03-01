@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -22,6 +22,15 @@ function CheckoutContent() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [showCancelMsg, setShowCancelMsg] = useState(status === "cancelled");
+    const [authLoading, setAuthLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user && !loading) {
+            router.push("/login?redirect=/checkout");
+        } else {
+            setAuthLoading(false);
+        }
+    }, [user, loading, router]);
 
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,6 +73,14 @@ function CheckoutContent() {
             setLoading(false);
         }
     };
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-10 w-10 text-emerald-900 animate-spin" />
+            </div>
+        );
+    }
 
     if (success) {
         return (

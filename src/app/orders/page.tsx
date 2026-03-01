@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 import { Package, Clock, CheckCircle2, ShoppingBag, ArrowRight, Truck, Loader2 } from "lucide-react";
@@ -15,6 +15,7 @@ function OrdersContent() {
     const { user } = useAuth();
     const { clearCart, cart } = useCart();
     const searchParams = useSearchParams();
+    const router = useRouter();
     const status = searchParams.get("status");
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,8 +38,17 @@ function OrdersContent() {
                     console.error(err);
                     setLoading(false);
                 });
+        } else {
+            setOrders([]);
+            setLoading(false);
         }
     }, [user]);
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push("/");
+        }
+    }, [user, loading, router]);
 
     return (
         <div className="min-h-screen bg-white">
