@@ -8,7 +8,7 @@ export function createPaymentUrl(orderId: string, amount: number, ipAddr: string
     const tmnCode = "64DFOLZV";
     const secretKey = "O6J4Z89F24EL7WDPFXJEJBX47AGBLQVO";
     const vnpayHost = "https://sandbox.vnpayment.vn";
-    const returnUrl = process.env.VNP_RETURNURL || "http://localhost:3000/api/vnpay/callback";
+    const returnUrl = process.env.VNP_RETURNURL || "https://ass-1-prn-232-51al.vercel.app//api/vnpay/callback";
 
     const vnpay = new VNPay({
         tmnCode: tmnCode,
