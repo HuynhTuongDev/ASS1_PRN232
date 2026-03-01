@@ -6,12 +6,12 @@ import { useCart } from "@/context/CartContext";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
-import { Package, Clock, CheckCircle2, ShoppingBag, ArrowRight, Truck } from "lucide-react";
+import { Package, Clock, CheckCircle2, ShoppingBag, ArrowRight, Truck, Loader2 } from "lucide-react";
 import Link from "next/link";
-
 import { formatVND } from "@/lib/currencies";
+import { Suspense } from "react";
 
-export default function OrdersPage() {
+function OrdersContent() {
     const { user } = useAuth();
     const { clearCart, cart } = useCart();
     const searchParams = useSearchParams();
@@ -168,5 +168,17 @@ export default function OrdersPage() {
                 )}
             </main>
         </div>
+    );
+}
+
+export default function OrdersPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-10 w-10 text-emerald-900 animate-spin" />
+            </div>
+        }>
+            <OrdersContent />
+        </Suspense>
     );
 }
