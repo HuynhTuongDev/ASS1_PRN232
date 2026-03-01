@@ -16,8 +16,14 @@ interface ProductFormProps {
   id?: number;
 }
 
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
+import { useNotification } from "@/context/NotificationContext";
+
 export default function ProductForm({ initialData, id }: ProductFormProps) {
   const router = useRouter();
+  const { user, role, loading: authLoading } = useAuth();
+  const { showToast } = useNotification();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -28,6 +34,19 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
     image: initialData?.image || "",
     category: initialData?.category || "General",
   });
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.push("/login?redirect=" + (id ? `/admin/products/edit/${id}` : "/admin/products/new"));
+      } else if (role !== "admin") {
+        router.push("/");
+      }
+    }
+  }, [user, role, authLoading, router, id]);
+
+  if (authLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-emerald-900" /></div>;
+  if (!user || role !== "admin") return null;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,9 +71,10 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
         .getPublicUrl(filePath);
 
       setFormData({ ...formData, image: data.publicUrl });
+      showToast("Tải ảnh lên thành công", "success");
     } catch (error: any) {
-      console.error('Error uploading image:', error);
-      alert(`Error uploading image: ${error.message || 'Unknown error'}. Make sure your Supabase keys are set and the "images" bucket is public with correct RLS policies.`);
+      console.error('Lỗi khi tải ảnh lên:', error);
+      showToast(`Lỗi khi tải ảnh lên: ${error.message || 'Lỗi không xác định'}`, "error");
     } finally {
       setUploading(false);
     }
@@ -74,13 +94,14 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error("Something went wrong");
+      if (!res.ok) throw new Error("Đã xảy ra lỗi");
 
-      router.push("/");
+      showToast(id ? "Cập nhật sản phẩm thành công" : "Tạo sản phẩm thành công", "success");
+      router.push("/admin/products");
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Error saving product");
+      showToast("Lỗi khi lưu sản phẩm", "error");
     } finally {
       setLoading(false);
     }
@@ -90,63 +111,63 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl mx-auto bg-white p-10 rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-100">
       <div className="space-y-6">
         <div>
-          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Product Name</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Tên sản phẩm</label>
           <input
             type="text"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium placeholder:text-slate-300"
-            placeholder="e.g. Premium Cotton Oversized Tee"
+            placeholder="VD: Áo thun cao cấp"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Description</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Mô tả</label>
           <textarea
             required
             rows={4}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-blue-500/10 transition-all outline-none resize-none font-medium placeholder:text-slate-300"
-            placeholder="Tell us about the fit, material, and style..."
+            placeholder="Mô tả về chất liệu, phong cách..."
           />
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Category</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Danh mục</label>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium text-slate-700"
           >
-            <option value="General">General</option>
-            <option value="Living">Living</option>
-            <option value="Wellness">Wellness</option>
-            <option value="Aroma">Aroma</option>
-            <option value="Style">Style</option>
-            <option value="Other">Other</option>
+            <option value="General">Chung</option>
+            <option value="Living">Đời sống</option>
+            <option value="Wellness">Sức khỏe</option>
+            <option value="Aroma">Hương thơm</option>
+            <option value="Style">Phong cách</option>
+            <option value="Other">Khác</option>
           </select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Price (USD)</label>
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Giá (VND)</label>
             <div className="relative">
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₫</span>
               <input
                 type="number"
-                step="0.01"
+                step="1"
                 required
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 className="w-full pl-10 pr-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold placeholder:text-slate-300"
-                placeholder="0.00"
+                placeholder="0"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Product Visuals</label>
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Hình ảnh sản phẩm</label>
             <div className="space-y-4">
               {formData.image ? (
                 <div className="relative aspect-video rounded-[1.5rem] overflow-hidden bg-slate-100 group border border-slate-200 shadow-inner">
@@ -181,7 +202,7 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
                       <div className="p-4 bg-slate-50 rounded-full group-hover:bg-white group-hover:shadow-lg transition-all">
                         <Upload className="h-6 w-6 text-slate-400 group-hover:text-blue-600 transition-colors" />
                       </div>
-                      <span className="text-sm font-bold text-slate-400 group-hover:text-blue-600">Drop your file or Click</span>
+                      <span className="text-sm font-bold text-slate-400 group-hover:text-blue-600">Thả tệp hoặc Nhấp để chọn</span>
                     </>
                   )}
                 </div>
@@ -202,7 +223,7 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                   className="w-full pl-12 pr-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-sm font-medium placeholder:text-slate-300"
-                  placeholder="Paste URL if you prefer..."
+                  placeholder="Hoặc dán URL hình ảnh..."
                 />
               </div>
             </div>
@@ -219,7 +240,7 @@ export default function ProductForm({ initialData, id }: ProductFormProps) {
           <Loader2 className="h-6 w-6 animate-spin" />
         ) : (
           <>
-            {id ? "Confirm Changes" : "Create Masterpiece"}
+            {id ? "Xác nhận thay đổi" : "Tạo sản phẩm ngay"}
             <ArrowRight className="h-5 w-5" />
           </>
         )}

@@ -16,21 +16,31 @@ interface Product {
   category: string;
 }
 
+import { useAuth } from "@/context/AuthContext";
+import { useNotification } from "@/context/NotificationContext";
+
 export default function Home() {
+  const { user } = useAuth();
+  const { showToast } = useNotification();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const categories = ["All", "Living", "Wellness", "Aroma", "Style", "Other"];
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    total: 0
+  });
 
-  const fetchProducts = async (query = "", category = "All") => {
+  const fetchProducts = async (query = "", category = "All", page = 1) => {
     setLoading(true);
     try {
       const categoryParam = category === "All" ? "" : category;
-      const res = await fetch(`/api/products?q=${encodeURIComponent(query)}&category=${encodeURIComponent(categoryParam)}`);
+      const res = await fetch(`/api/products?q=${encodeURIComponent(query)}&category=${encodeURIComponent(categoryParam)}&page=${page}&limit=8`);
       const data = await res.json();
-      setProducts(data);
+      setProducts(data.products);
+      setPagination(data.pagination);
     } catch (error) {
       console.error(error);
     } finally {
@@ -40,23 +50,32 @@ export default function Home() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchProducts(search, selectedCategory);
+      fetchProducts(search, selectedCategory, 1);
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
   }, [search, selectedCategory]);
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    fetchProducts(search, selectedCategory, newPage);
+    // Scroll to collection top
+    document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    const isConfirmed = await confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?");
+    if (!isConfirmed) return;
 
     try {
       const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
       if (res.ok) {
         setProducts(products.filter((p) => p.id !== id));
+        showToast("Đã xóa sản phẩm", "success");
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to delete product");
+      showToast("Xóa sản phẩm thất bại", "error");
     }
   };
 
@@ -96,21 +115,21 @@ export default function Home() {
             >
               <div className="flex items-center gap-3 py-2 px-4 rounded-full bg-emerald-50/50 border border-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
                 <Sparkles className="h-3 w-3" />
-                Botanical & Pure Essentials
+                Tinh chất Thảo mộc & Thuần khiết
               </div>
               <h1 className="text-7xl md:text-9xl font-black text-slate-900 mb-8 leading-[0.85] tracking-tighter">
-                HARMONIZE <br />
-                <span className="text-emerald-800">YOUR SPACE.</span>
+                HÀI HÒA <br />
+                <span className="text-emerald-800">KHÔNG GIAN.</span>
               </h1>
               <p className="text-slate-500 text-lg md:text-xl font-medium mb-12 max-w-xl leading-relaxed">
-                Discover curated essentials for an intentional life. High-integrity materials meets timeless design for the modern sanctuary.
+                Khám phá các sản phẩm thiết yếu được lựa chọn kỹ lưỡng. Chất liệu cao cấp kết hợp với thiết kế vượt thời gian cho không gian sống hiện đại.
               </p>
               <div className="flex flex-wrap items-center gap-6 justify-center lg:justify-start">
                 <a href="#collection" className="group bg-emerald-900 text-white px-10 py-6 rounded-2xl font-bold flex items-center gap-3 hover:bg-emerald-950 transition-all shadow-2xl shadow-emerald-900/20 active:scale-95">
-                  Explore Essentials <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  Khám phá ngay <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </a>
                 <Link href="/products/new" className="bg-white border border-slate-200 text-slate-900 px-10 py-6 rounded-2xl font-bold hover:bg-slate-50 transition-all active:scale-95">
-                  Join the Circle
+                  {user ? "Thêm sản phẩm" : "Tham gia ngay"}
                 </Link>
               </div>
             </motion.div>
@@ -141,8 +160,8 @@ export default function Home() {
                     <Leaf className="h-7 w-7" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-1">Our Choice</p>
-                    <p className="text-lg font-bold text-slate-900 leading-tight">Organic Silk Candle</p>
+                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-1">Lựa chọn của chúng tôi</p>
+                    <p className="text-lg font-bold text-slate-900 leading-tight">Nến lụa hữu cơ</p>
                   </div>
                 </motion.div>
               </div>
@@ -162,10 +181,10 @@ export default function Home() {
           <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
             <div className="max-w-xl">
               <h2 className="text-5xl font-black text-slate-900 mb-4 tracking-tighter">
-                The Collection
+                Bộ sưu tập
               </h2>
               <p className="text-slate-500 font-medium text-lg">
-                Explore our full range of curated essentials. Filter by name or style to find your perfect match.
+                Khám phá đầy đủ các dòng sản phẩm thiết yếu. Lọc theo tên hoặc phong cách để tìm kiếm sự lựa chọn hoàn hảo.
               </p>
             </div>
 
@@ -174,7 +193,7 @@ export default function Home() {
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-800/40" />
               <input
                 type="text"
-                placeholder="Search the archive..."
+                placeholder="Tìm kiếm sản phẩm..."
                 className="relative w-full pl-16 pr-16 py-6 rounded-[2rem] bg-white border border-emerald-100 focus:border-emerald-800"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -190,11 +209,16 @@ export default function Home() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-8 py-3 rounded-2xl font-bold transition-all ${selectedCategory === cat
-                    ? "bg-emerald-900 text-white shadow-xl shadow-emerald-900/20"
-                    : "bg-white text-slate-500 hover:bg-emerald-50"
+                  ? "bg-emerald-900 text-white shadow-xl shadow-emerald-900/20"
+                  : "bg-white text-slate-500 hover:bg-emerald-50"
                   }`}
               >
-                {cat}
+                {cat === "All" ? "Tất cả" :
+                  cat === "Living" ? "Đời sống" :
+                    cat === "Wellness" ? "Sức khỏe" :
+                      cat === "Aroma" ? "Hương thơm" :
+                        cat === "Style" ? "Phong cách" :
+                          cat === "Other" ? "Khác" : cat}
               </motion.button>
             ))}
           </div>
@@ -207,34 +231,78 @@ export default function Home() {
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               className="h-16 w-16 border-4 border-emerald-50 border-t-emerald-800 rounded-full"
             />
-            <p className="text-slate-500 font-bold mt-6 tracking-widest uppercase text-xs">Syncing Selection...</p>
+            <p className="text-slate-500 font-bold mt-6 tracking-widest uppercase text-xs">Đang đồng bộ...</p>
           </div>
         ) : (
-          <motion.div
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16"
-          >
-            <AnimatePresence>
-              {products.length > 0 ? (
-                products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onDelete={handleDelete}
-                  />
-                ))
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="col-span-full flex flex-col items-center justify-center py-32"
+          <>
+            <motion.div
+              layout
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16"
+            >
+              <AnimatePresence>
+                {products.length > 0 ? (
+                  products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onDelete={handleDelete}
+                    />
+                  ))
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="col-span-full flex flex-col items-center justify-center py-32"
+                  >
+                    <PackageX className="h-12 w-12 text-slate-200 mb-4" />
+                    <p className="text-slate-400 font-medium">Không tìm thấy sản phẩm nào phù hợp.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Pagination UI */}
+            {pagination.totalPages > 1 && (
+              <div className="mt-24 flex items-center justify-center gap-4">
+                <button
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="p-5 rounded-2xl bg-slate-50 text-slate-400 hover:text-emerald-900 hover:bg-emerald-50 transition-all disabled:opacity-30 disabled:hover:bg-slate-50 disabled:hover:text-slate-400"
                 >
-                  <PackageX className="h-12 w-12 text-slate-200 mb-4" />
-                  <p className="text-slate-400 font-medium">No matches found in the archive.</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+                  <ArrowRight className="h-5 w-5 rotate-180" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {[...Array(pagination.totalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={`w-14 h-14 rounded-2xl font-black transition-all ${pagination.page === i + 1
+                        ? "bg-emerald-900 text-white shadow-xl shadow-emerald-900/20"
+                        : "bg-white text-slate-400 hover:bg-slate-50"
+                        }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.totalPages}
+                  className="p-5 rounded-2xl bg-slate-50 text-slate-400 hover:text-emerald-900 hover:bg-emerald-50 transition-all disabled:opacity-30 disabled:hover:bg-slate-50 disabled:hover:text-slate-400"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              </div>
+            )}
+
+            <div className="mt-12 text-center">
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
+                Hiển thị {products.length} trên tổng số {pagination.total} sản phẩm
+              </p>
+            </div>
+          </>
         )}
       </main>
 
@@ -247,7 +315,7 @@ export default function Home() {
             </div>
             <span className="text-xl font-black text-slate-900 uppercase">AURA</span>
           </div>
-          <p className="text-slate-400 text-sm font-medium">© 2026 AURA Essentials. All rights reserved.</p>
+          <p className="text-slate-400 text-sm font-medium">© 2026 AURA Essentials. Bản quyền được bảo lưu.</p>
         </div>
       </footer>
     </div>
