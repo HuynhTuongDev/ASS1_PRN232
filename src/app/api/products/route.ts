@@ -6,23 +6,41 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
     const category = searchParams.get("category") || "";
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "8");
+    const skip = (page - 1) * limit;
 
-    const products = await prisma.product.findMany({
-      where: {
-        AND: [
-          {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { description: { contains: query, mode: "insensitive" } },
-            ],
-          },
-          category ? { category: { equals: category } } : {},
-        ],
-      },
-      orderBy: { createdAt: "desc" },
+    const where = {
+      AND: [
+        {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+        },
+        category ? { category: { equals: category } } : {},
+      ],
+    } as any;
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      }
     });
-
-    return NextResponse.json(products);
   } catch (error) {
     console.error("GET /api/products error:", error);
     return NextResponse.json(

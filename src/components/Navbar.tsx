@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Leaf, PlusCircle, ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
+import { Leaf, PlusCircle, ShoppingBag, X, Minus, Plus, Trash2, LogIn, LogOut, User, LayoutDashboard } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatVND } from "@/lib/currencies";
 
 export default function Navbar() {
   const { cart, totalItems, totalPrice, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { user, role, signOut } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   return (
     <>
@@ -29,18 +33,86 @@ export default function Navbar() {
               </Link>
             </div>
 
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
               <Link href="/" className="hidden sm:block text-slate-500 hover:text-emerald-800 font-semibold transition-colors text-xs uppercase tracking-widest">
-                Collection
+                Bộ sưu tập
               </Link>
 
-              <Link
-                href="/products/new"
-                className="hidden sm:flex bg-emerald-50 text-emerald-800 px-6 py-3 rounded-2xl text-xs font-bold hover:bg-emerald-100 transition-all flex items-center gap-2 group active:scale-95"
-              >
-                <PlusCircle className="h-4 w-4" />
-                Add Entry
-              </Link>
+              {user && role === "admin" && (
+                <Link
+                  href="/admin/products/new"
+                  className="hidden sm:flex bg-emerald-50 text-emerald-800 px-6 py-3 rounded-2xl text-xs font-bold hover:bg-emerald-100 transition-all flex items-center gap-2 group active:scale-95"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Thêm sản phẩm
+                </Link>
+              )}
+
+              {user ? (
+                <>
+
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                      className="p-3 bg-slate-50 text-slate-900 rounded-2xl hover:bg-slate-100 transition-all active:scale-95"
+                    >
+                      <User className="h-5 w-5" />
+                    </button>
+
+                    <AnimatePresence>
+                      {isUserMenuOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute right-0 mt-4 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 overflow-hidden"
+                        >
+                          <div className="px-4 py-3 border-b border-slate-50">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đăng nhập với</p>
+                            <p className="text-sm font-bold text-slate-900 truncate">{user.email}</p>
+                          </div>
+                          <Link
+                            href="/orders"
+                            className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            Lịch sử đơn hàng
+                          </Link>
+
+                          {role === "admin" && (
+                            <Link
+                              href="/admin"
+                              className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              <LayoutDashboard className="h-4 w-4" />
+                              Quản trị viên
+                            </Link>
+                          )}
+                          <button
+                            onClick={() => {
+                              signOut();
+                              setIsUserMenuOpen(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors text-left"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Đăng xuất
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="bg-slate-50 text-slate-900 px-6 py-3 rounded-2xl text-xs font-bold hover:bg-slate-100 transition-all flex items-center gap-2 group active:scale-95"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Đăng nhập
+                </Link>
+              )}
 
               <button
                 onClick={() => setIsCartOpen(true)}
@@ -85,7 +157,7 @@ export default function Navbar() {
                 <div className="h-full flex flex-col bg-white shadow-2xl rounded-l-[3rem] overflow-hidden">
                   <div className="flex-1 py-10 overflow-y-auto px-8 sm:px-10">
                     <div className="flex items-start justify-between mb-12">
-                      <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Your Bag</h2>
+                      <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Giỏ hàng của bạn</h2>
                       <button
                         onClick={() => setIsCartOpen(false)}
                         className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-100 hover:text-slate-900 transition-all"
@@ -101,12 +173,12 @@ export default function Navbar() {
                             <div className="bg-slate-50 p-8 rounded-full mb-6">
                               <ShoppingBag className="h-12 w-12 text-slate-200" />
                             </div>
-                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Bag is empty</p>
+                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Giỏ hàng trống</p>
                             <button
                               onClick={() => setIsCartOpen(false)}
                               className="mt-6 text-emerald-800 font-bold hover:underline"
                             >
-                              Continue Shopping
+                              Tiếp tục mua sắm
                             </button>
                           </div>
                         ) : (
@@ -131,9 +203,9 @@ export default function Navbar() {
                                   <div>
                                     <div className="flex justify-between text-base font-bold text-slate-900">
                                       <h3 className="line-clamp-1">{item.name}</h3>
-                                      <p className="ml-4">${(item.price * item.quantity).toFixed(2)}</p>
+                                      <p className="ml-4">{formatVND(item.price * item.quantity)}</p>
                                     </div>
-                                    <p className="mt-1 text-xs font-black text-emerald-800 uppercase tracking-widest">Premium Choice</p>
+                                    <p className="mt-1 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Lựa chọn cao cấp</p>
                                   </div>
                                   <div className="flex flex-1 items-end justify-between text-sm">
                                     <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
@@ -172,23 +244,23 @@ export default function Navbar() {
                   {cart.length > 0 && (
                     <div className="border-t border-slate-100 py-10 px-10 bg-slate-50/50">
                       <div className="flex justify-between text-base font-medium text-slate-900 mb-2">
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Subtotal</p>
-                        <p className="text-2xl font-black tracking-tighter">${totalPrice.toFixed(2)}</p>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Tạm tính</p>
+                        <p className="text-2xl font-black tracking-tighter">{formatVND(totalPrice)}</p>
                       </div>
-                      <p className="mt-0.5 text-xs text-slate-400 mb-8 italic">Excluding delivery and taxes.</p>
+                      <p className="mt-0.5 text-[10px] text-slate-400 mb-8 italic">Chưa bao gồm phí vận chuyển và thuế.</p>
                       <div className="space-y-4">
                         <Link
                           href="/checkout"
                           onClick={() => setIsCartOpen(false)}
                           className="w-full flex items-center justify-center rounded-2xl border border-transparent bg-emerald-900 px-6 py-5 text-base font-bold text-white shadow-xl shadow-emerald-900/20 hover:bg-emerald-950 transition-all active:scale-95"
                         >
-                          Checkout Securely
+                          Thanh toán an toàn
                         </Link>
                         <button
                           onClick={clearCart}
-                          className="w-full text-center text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
+                          className="w-full text-center text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
                         >
-                          Clear Selection
+                          Xóa giỏ hàng
                         </button>
                       </div>
                     </div>

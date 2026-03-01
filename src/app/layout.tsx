@@ -10,6 +10,8 @@ export const metadata: Metadata = {
 };
 
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 export default function RootLayout({
   children,
@@ -19,9 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${outfit.className} antialiased text-slate-900 bg-white`}>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </NotificationProvider>
+        </AuthProvider>
       </body>
     </html>
   );
